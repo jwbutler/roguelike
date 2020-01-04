@@ -7,6 +7,8 @@ public interface Unit
     int getX();
     int getY();
 
+    void moveTo(int x, int y);
+
     @Nonnull
     static Unit create(int x, int y)
     {

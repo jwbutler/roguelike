@@ -2,15 +2,12 @@ package com.jwbutler.roguelike.map;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import com.google.common.base.Preconditions;
 import com.jwbutler.roguelike.items.MapItem;
 import com.jwbutler.roguelike.terrain.Terrain;
 import com.jwbutler.roguelike.units.Unit;
-import com.jwbutler.roguelike.geometry.Coordinates;
 
 class GameMapImpl implements GameMap
 {
@@ -18,20 +15,20 @@ class GameMapImpl implements GameMap
     private final int m_height;
 
     @Nonnull
-    private final Map<Coordinates, Terrain> m_terrain;
+    private final Collection<Terrain> m_terrain;
     @Nonnull
-    private final Map<Coordinates, MapItem> m_items;
+    private final Collection<MapItem> m_items;
     @Nonnull
-    private final Map<Coordinates, Unit> m_units;
+    private final Collection<Unit> m_units;
     @Nonnull
     private final Unit m_playerUnit;
 
     GameMapImpl(
         int width,
         int height,
-        @Nonnull Map<Coordinates, Terrain> terrain,
-        @Nonnull Map<Coordinates, MapItem> items,
-        @Nonnull Map<Coordinates, Unit> units,
+        @Nonnull Collection<Terrain> terrain,
+        @Nonnull Collection<MapItem> items,
+        @Nonnull Collection<Unit> units,
         @Nonnull Unit playerUnit
     )
     {
@@ -59,44 +56,51 @@ class GameMapImpl implements GameMap
     @Override
     public Collection<Terrain> getTerrain()
     {
-        return new ArrayList<>(m_terrain.values());
+        return new ArrayList<>(m_terrain);
     }
 
     @Nonnull
     @Override
     public Terrain getTerrain(int x, int y)
     {
-        Terrain terrain = m_terrain.get(new Coordinates(x, y));
-        Preconditions.checkState(terrain != null);
-        return terrain;
+        return m_terrain.stream()
+            .filter(t -> t.getX() == x && t.getY() == y)
+            .findFirst()
+            .orElseThrow(IllegalStateException::new);
     }
 
     @Nonnull
     @Override
     public Collection<MapItem> getItems()
     {
-        return new ArrayList<>(m_items.values());
+        return new ArrayList<>(m_items);
     }
 
     @CheckForNull
     @Override
     public MapItem getItem(int x, int y)
     {
-        return m_items.get(new Coordinates(x, y));
+        return m_items.stream()
+            .filter(t -> t.getX() == x && t.getY() == y)
+            .findFirst()
+            .orElse(null);
     }
 
     @Nonnull
     @Override
     public Collection<Unit> getUnits()
     {
-        return new ArrayList<>(m_units.values());
+        return new ArrayList<>(m_units);
     }
 
     @CheckForNull
     @Override
     public Unit getUnit(int x, int y)
     {
-        return m_units.get(new Coordinates(x, y));
+        return m_units.stream()
+            .filter(t -> t.getX() == x && t.getY() == y)
+            .findFirst()
+            .orElse(null);
     }
 
     @Nonnull
@@ -104,5 +108,19 @@ class GameMapImpl implements GameMap
     public Unit getPlayerUnit()
     {
         return m_playerUnit;
+    }
+
+    @Override
+    public boolean contains(int x, int y)
+    {
+        return x >= 0 && x < m_width
+            && y >= 0 && y < m_height;
+    }
+
+    @Override
+    public boolean isBlocked(int x, int y)
+    {
+        return getUnit(x, y) != null
+            || getTerrain(x, y).isBlocking();
     }
 }

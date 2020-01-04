@@ -31,4 +31,9 @@ public class Terrain
     {
         return m_type;
     }
+
+    public boolean isBlocking()
+    {
+        return m_type.isBlocking();
+    }
 }

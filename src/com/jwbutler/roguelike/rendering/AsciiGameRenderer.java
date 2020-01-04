@@ -1,11 +1,17 @@
 package com.jwbutler.roguelike.rendering;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.event.KeyListener;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
 
 import com.jwbutler.roguelike.items.MapItem;
 import com.jwbutler.roguelike.map.GameMap;
@@ -14,9 +20,30 @@ import com.jwbutler.roguelike.units.Unit;
 
 class AsciiGameRenderer implements GameRenderer
 {
+    @Nonnull
+    private final Frame m_frame;
+    @Nonnull
+    private final JTextArea m_textArea;
+
+    AsciiGameRenderer()
+    {
+        m_frame = new JFrame();
+        m_frame.setVisible(true);
+        m_frame.setLocation(400, 400);
+        m_textArea = new JTextArea();
+        m_textArea.setLocation(0, 0);
+        m_textArea.setBackground(Color.BLACK);
+        m_textArea.setForeground(Color.WHITE);
+        m_textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+        m_textArea.setEditable(false);
+        m_frame.add(m_textArea);
+    }
+
     @Override
     public void renderMap(@Nonnull GameMap map)
     {
+        m_textArea.setColumns(map.getWidth());
+        m_textArea.setRows(map.getHeight());
         String rendered = IntStream.range(0, map.getHeight())
             .mapToObj(y ->
             {
@@ -28,7 +55,16 @@ class AsciiGameRenderer implements GameRenderer
             })
             .collect(Collectors.joining("\n"));
 
-        System.out.println(rendered + "\n\n\n");
+        m_textArea.setText(rendered);
+        m_textArea.repaint();
+        m_frame.pack();
+        m_frame.repaint();
+    }
+
+    @Override
+    public void addKeyListener(@Nonnull KeyListener keyListener)
+    {
+        m_textArea.addKeyListener(keyListener);
     }
 
     private static char _renderTile(@Nonnull Terrain terrain, @CheckForNull MapItem item, @CheckForNull Unit unit)
@@ -60,6 +96,7 @@ class AsciiGameRenderer implements GameRenderer
 
     private static char _renderUnit(@Nonnull Unit unit)
     {
+        System.out.println("Rendering " + unit);
         return '@';
     }
 
